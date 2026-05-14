@@ -1,0 +1,39 @@
+# ===== OS =====
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# ===== IDE =====
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# ===== Claude =====
+.claude/
+
+# ===== Docker / Env =====
+.env
+docker-compose.override.yml
+
+# ===== Backend =====
+backend/target/
+backend/*.class
+backend/*.jar
+backend/*.log
+
+# ===== Frontend =====
+frontend/.dart_tool/
+frontend/build/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/android/app/debug/
+frontend/android/app/profile/
+frontend/android/app/release/
+frontend/android/.gradle/
+frontend/android/local.properties
+frontend/ios/Flutter/.last_build_id
+frontend/ios/Pods/
+frontend/*.log
