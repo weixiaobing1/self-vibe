@@ -9,18 +9,29 @@ class AuthService {
       'username': username,
       'password': password,
     });
-    final data = resp.data['data'];
+    final respData = resp.data as Map<String, dynamic>;
+    if (respData['code'] != 200) {
+      throw Exception(respData['message'] ?? '登录失败');
+    }
+    final data = respData['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      throw Exception(respData['message'] ?? '登录失败');
+    }
     final result = LoginResult.fromJson(data);
     await _api.saveToken(result.accessToken, result.refreshToken);
     return result;
   }
 
   Future<void> register(String username, String password, String nickname) async {
-    await _api.dio.post('/api/user/register', data: {
+    final resp = await _api.dio.post('/api/user/register', data: {
       'username': username,
       'password': password,
       'nickname': nickname,
     });
+    final respData = resp.data as Map<String, dynamic>;
+    if (respData['code'] != 200) {
+      throw Exception(respData['message'] ?? '注册失败');
+    }
   }
 
   Future<User> getUserInfo() async {

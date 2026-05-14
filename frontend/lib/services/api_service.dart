@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/api_config.dart';
 
 class ApiService {
   late Dio dio;
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  final _storage = <String, String>{};
   static final ApiService _instance = ApiService._internal();
 
   /// Global callback for non-401 network errors (set from UI layer)
@@ -23,7 +22,7 @@ class ApiService {
 
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
-        final token = await _storage.read(key: 'accessToken');
+        final token = _storage['accessToken'];
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
         }
@@ -33,7 +32,7 @@ class ApiService {
         if (error.response?.statusCode == 401) {
           final refreshed = await _tryRefreshToken();
           if (refreshed) {
-            final token = await _storage.read(key: 'accessToken');
+            final token = _storage['accessToken'];
             error.requestOptions.headers['Authorization'] = 'Bearer $token';
             final retryResponse = await dio.fetch(error.requestOptions);
             return handler.resolve(retryResponse);
@@ -52,7 +51,7 @@ class ApiService {
 
   Future<bool> _tryRefreshToken() async {
     try {
-      final refreshToken = await _storage.read(key: 'refreshToken');
+      final refreshToken = _storage['refreshToken'];
       if (refreshToken == null) return false;
 
       final response = await Dio(BaseOptions(baseUrl: ApiConfig.baseUrl))
@@ -60,8 +59,8 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = response.data['data'];
-        await _storage.write(key: 'accessToken', value: data['accessToken']);
-        await _storage.write(key: 'refreshToken', value: data['refreshToken']);
+        _storage['accessToken'] = data['accessToken'];
+        _storage['refreshToken'] = data['refreshToken'];
         return true;
       }
     } catch (_) {}
@@ -69,17 +68,17 @@ class ApiService {
   }
 
   Future<void> saveToken(String accessToken, String refreshToken) async {
-    await _storage.write(key: 'accessToken', value: accessToken);
-    await _storage.write(key: 'refreshToken', value: refreshToken);
+    _storage['accessToken'] = accessToken;
+    _storage['refreshToken'] = refreshToken;
   }
 
   Future<void> clearToken() async {
-    await _storage.delete(key: 'accessToken');
-    await _storage.delete(key: 'refreshToken');
+    _storage.remove('accessToken');
+    _storage.remove('refreshToken');
   }
 
   Future<String?> getToken() async {
-    return await _storage.read(key: 'accessToken');
+    return _storage['accessToken'];
   }
 
   /// Extract a human-readable error message from a [DioException].

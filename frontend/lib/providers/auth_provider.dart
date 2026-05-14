@@ -98,9 +98,6 @@ class AuthProvider extends ChangeNotifier {
     if (e is DioException) {
       return ApiService.extractError(e);
     }
-    if (e is Exception) {
-      return '网络错误，请重试';
-    }
-    return '未知错误';
+    return e.toString();
   }
 }
