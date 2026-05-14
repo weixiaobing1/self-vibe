@@ -9,11 +9,21 @@ services:
       MYSQL_DATABASE: mindflow
       TZ: Asia/Shanghai
     ports:
-      - "${MYSQL_PORT:-3308}:3306"
+      - "${MYSQL_PORT:-3306}:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
       - mindflow-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+      - --innodb-buffer-pool-size=128M
+      - --performance-schema=OFF
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -21,7 +31,7 @@ services:
       retries: 10
 
   redis:
-    image: redis:latest
+    image: redis:7-alpine
     container_name: mindflow-redis
     restart: always
     ports:
@@ -30,6 +40,11 @@ services:
       - redis-data:/data
     networks:
       - mindflow-network
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru --save 900 1 --save 300 10
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -58,13 +73,14 @@ services:
       - REDIS_PASSWORD=
       - AI_API_KEY=${AI_API_KEY}
       - JWT_SECRET=${JWT_SECRET}
-      - MINIO_ENDPOINT=${MINIO_ENDPOINT:-http://minio:9000}
-      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
-      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     networks:
       - mindflow-network
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
   frontend:
     build:
@@ -78,27 +94,14 @@ services:
       - "${FRONTEND_PORT:-80}:80"
     networks:
       - mindflow-network
-
-  minio:
-    image: minio/minio:latest
-    container_name: mindflow-minio
-    restart: always
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
-    ports:
-      - "${MINIO_PORT:-9000}:9000"
-      - "${MINIO_CONSOLE_PORT:-9001}:9001"
-    volumes:
-      - minio-data:/data
-    networks:
-      - mindflow-network
+    deploy:
+      resources:
+        limits:
+          memory: 64M
 
 volumes:
   mysql-data:
   redis-data:
-  minio-data:
 
 networks:
   mindflow-network:
