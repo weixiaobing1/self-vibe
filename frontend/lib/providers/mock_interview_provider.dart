@@ -54,6 +54,7 @@ class MockInterviewProvider extends ChangeNotifier {
   Future<void> startInterview() async {
     if (_topic.trim().isEmpty) return;
 
+    _streamSub?.cancel();
     _sessionId = 'mock_interview_${DateTime.now().millisecondsSinceEpoch}';
     _hasStarted = true;
     _isLoading = true;
@@ -94,6 +95,7 @@ class MockInterviewProvider extends ChangeNotifier {
   }
 
   Future<void> sendAnswer(String answer) async {
+    _streamSub?.cancel();
     _messages.add(ChatMessage(role: 'user', content: answer));
     _isLoading = true;
     _streamingText = '';

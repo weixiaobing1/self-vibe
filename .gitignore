@@ -28,6 +28,7 @@ backend/*.log
 frontend/.metadata
 frontend/.dart_tool/
 frontend/build/
+frontend/build-web.tar.gz
 frontend/.flutter-plugins
 frontend/.flutter-plugins-dependencies
 frontend/android/app/debug/

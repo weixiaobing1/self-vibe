@@ -76,6 +76,7 @@ $content''';
   }
 
   Future<void> generateQuiz(String content) async {
+    _streamSub?.cancel();
     _isGenerating = true;
     _rawResponse = '';
     _questions = [];

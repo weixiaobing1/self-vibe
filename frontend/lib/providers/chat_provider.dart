@@ -24,6 +24,7 @@ class ChatProvider extends ChangeNotifier {
   }
 
   Future<void> sendMessage(String content) async {
+    _streamSub?.cancel();
     _messages.add(ChatMessage(role: 'user', content: content));
     _isLoading = true;
     _streamingText = '';

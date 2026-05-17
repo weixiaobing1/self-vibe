@@ -401,8 +401,8 @@ class _QuizPageState extends State<QuizPage> {
                   if (qp.currentIndex > 0)
                     TextButton.icon(
                       onPressed: () {
-                        _fillCtrl.clear();
                         qp.prevQuestion();
+                        _fillCtrl.text = qp.currentQuestion?.userAnswer ?? '';
                       },
                       icon: const Icon(Icons.chevron_left),
                       label: const Text('上一题'),
@@ -413,8 +413,8 @@ class _QuizPageState extends State<QuizPage> {
                   if (qp.currentIndex < qp.totalCount - 1)
                     ElevatedButton.icon(
                       onPressed: () {
-                        _fillCtrl.clear();
                         qp.nextQuestion();
+                        _fillCtrl.text = qp.currentQuestion?.userAnswer ?? '';
                       },
                       icon: const Icon(Icons.chevron_right),
                       label: const Text('下一题'),

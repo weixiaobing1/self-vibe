@@ -14,6 +14,8 @@ class NoteDetailPage extends StatefulWidget {
 }
 
 class _NoteDetailPageState extends State<NoteDetailPage> {
+  final Set<int> _expandedQuestions = {};
+
   @override
   void initState() {
     super.initState();
@@ -98,38 +100,51 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
   }
 
   Widget _buildQuestionCard(InterviewQuestion q) {
-    bool expanded = false;
-    return StatefulBuilder(
-      builder: (context, setLocalState) => Card(
-        margin: const EdgeInsets.only(bottom: 8),
-        child: InkWell(
-          onTap: () => setLocalState(() => expanded = !expanded),
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: (q.level == '初级' ? Colors.green : q.level == '中级' ? Colors.orange : Colors.red).withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(q.level ?? '', style: const TextStyle(fontSize: 11)),
+    final expanded = _expandedQuestions.contains(q.id);
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            if (_expandedQuestions.contains(q.id)) {
+              _expandedQuestions.remove(q.id);
+            } else {
+              _expandedQuestions.add(q.id);
+            }
+          });
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: (q.level == '初级'
+                              ? Colors.green
+                              : q.level == '中级'
+                                  ? Colors.orange
+                                  : Colors.red)
+                          .withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(q.question ?? '', style: TextStyle(fontSize: 14, color: AppTheme.textPrimary))),
-                  ],
-                ),
-                if (expanded && q.answer != null) ...[
-                  const Divider(height: 24),
-                  Text(q.answer!, style: TextStyle(fontSize: 14, color: AppTheme.textSecondary, height: 1.5)),
+                    child: Text(q.level ?? '', style: const TextStyle(fontSize: 11)),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(q.question ?? '',
+                      style: TextStyle(fontSize: 14, color: AppTheme.textPrimary))),
                 ],
+              ),
+              if (expanded && q.answer != null) ...[
+                const Divider(height: 24),
+                Text(q.answer!,
+                    style: TextStyle(fontSize: 14, color: AppTheme.textSecondary, height: 1.5)),
               ],
-            ),
+            ],
           ),
         ),
       ),

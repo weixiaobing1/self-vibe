@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/theme.dart';
 
 class ThemeProvider extends ChangeNotifier {
-  static const _storage = FlutterSecureStorage();
   static const _key = 'theme_color';
+  static final _storage = <String, String>{};
 
   ThemeColor _color = ThemeColor.black;
 
@@ -12,20 +11,15 @@ class ThemeProvider extends ChangeNotifier {
   ThemeData get theme => AppTheme.getTheme(_color);
 
   ThemeProvider() {
-    _load();
-  }
-
-  Future<void> _load() async {
-    final saved = await _storage.read(key: _key);
+    final saved = _storage[_key];
     if (saved != null) {
       _color = ThemeColor.values.firstWhere((e) => e.name == saved, orElse: () => ThemeColor.black);
     }
-    notifyListeners();
   }
 
-  Future<void> setColor(ThemeColor color) async {
+  void setColor(ThemeColor color) {
     _color = color;
-    await _storage.write(key: _key, value: color.name);
+    _storage[_key] = color.name;
     notifyListeners();
   }
 }

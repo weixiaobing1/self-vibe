@@ -1,5 +1,5 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -9,35 +9,39 @@ class NotificationService {
   NotificationService._internal();
 
   final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  final _storage = <String, String>{};
   static const _hourKey = 'reminder_hour';
   static const _minuteKey = 'reminder_minute';
 
   Future<void> init() async {
-    tz.initializeTimeZones();
+    // Notifications are not supported on web; skip silently.
+    if (kIsWeb) return;
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+    try {
+      tz.initializeTimeZones();
 
-    await _plugin.initialize(
-      const InitializationSettings(android: androidSettings, iOS: iosSettings),
-    );
+      const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const iosSettings = DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
 
-    // Reschedule if previously configured
-    final hour = await _storage.read(key: _hourKey);
-    final minute = await _storage.read(key: _minuteKey);
-    if (hour != null && minute != null) {
-      await _schedule(int.parse(hour), int.parse(minute));
-    }
+      await _plugin.initialize(
+        const InitializationSettings(android: androidSettings, iOS: iosSettings),
+      );
+
+      final hour = _storage[_hourKey];
+      final minute = _storage[_minuteKey];
+      if (hour != null && minute != null) {
+        await _schedule(int.parse(hour), int.parse(minute));
+      }
+    } catch (_) {}
   }
 
   Future<void> scheduleDailyReminder(int hour, int minute) async {
-    await _storage.write(key: _hourKey, value: hour.toString());
-    await _storage.write(key: _minuteKey, value: minute.toString());
+    _storage[_hourKey] = hour.toString();
+    _storage[_minuteKey] = minute.toString();
     await _schedule(hour, minute);
   }
 
@@ -67,17 +71,17 @@ class NotificationService {
 
   Future<void> cancelAll() async {
     await _plugin.cancelAll();
-    await _storage.delete(key: _hourKey);
-    await _storage.delete(key: _minuteKey);
+    _storage.remove(_hourKey);
+    _storage.remove(_minuteKey);
   }
 
   Future<int?> getReminderHour() async {
-    final v = await _storage.read(key: _hourKey);
+    final v = _storage[_hourKey];
     return v != null ? int.tryParse(v) : null;
   }
 
   Future<int?> getReminderMinute() async {
-    final v = await _storage.read(key: _minuteKey);
+    final v = _storage[_minuteKey];
     return v != null ? int.tryParse(v) : null;
   }
 
